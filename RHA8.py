@@ -8,8 +8,8 @@ GitHub repository: https://github.com/An-anonymous-coder/RHA8
 
 FUNCTIONS
 ---------
-encrypt(file_path, password, decryption_key, verbose)
-decrypt(file_path, password, verbose)
+encrypt(file_path, password, decryption_key, verbose): Encrypts any file. Returns nothing.
+decrypt(file_path, password, verbose): Decrypts any file. Returns nothing.
 """
 import os
 import time
@@ -19,7 +19,7 @@ import numpy  # https://numpy.org/install/
 
 
 def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[str, None] = None,
-            decryption_key: typing.Union[str, None] = None, verbose: bool = False) -> str:
+            decryption_key: typing.Union[str, None] = None, verbose: bool = False) -> None:
     """
     This function encrypts any file.
     :param file_path: This is the file path for the file to be encrypted. If none is provided, you will be prompted for
@@ -33,8 +33,6 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
     :type decryption_key: str or None
     :param bool verbose: If this is set to True, this will print what the function is doing at each step. Otherwise,
         those print statements are hidden. Defaults to False.
-    :return: The function returns the decryption key.
-    :rtype: str
     """
     if not file_path:
         if verbose:
@@ -77,7 +75,6 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
         # This generates the file path used to store the encrypted file.
         if os.path.exists(encrypted_file_path):
             print('[!] File {path} already exists.\n'.format(path=encrypted_file_path))
-            return decryption_key
         if verbose:
             print('[v] Creating file... ({path})'.format(path=encrypted_file_path))
         with open(encrypted_file_path, 'wb') as encrypted_file:
@@ -115,7 +112,6 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
     print('Encrypted as: {name}'.format(name=encrypted_file_name))
     if verbose:
         print('[v] Done!\n')
-    return decryption_key
 
 
 def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[str, None] = None,
