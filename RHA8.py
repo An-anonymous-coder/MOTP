@@ -7,7 +7,7 @@ import random
 import time
 import typing
 
-import numpy  # pip install numpy
+import numpy  # https://numpy.org/install/
 
 
 def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[str, None] = None,
