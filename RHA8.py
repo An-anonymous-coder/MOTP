@@ -96,7 +96,7 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
                     start = time.perf_counter()  # This starts a timer to time the encryption.
                 noise = numpy.random.randint(0, 256, file_size, dtype=numpy.uint8)
                 encrypted_file.write(
-                    bytearray(numpy.array(bytearray(decrypted_file.read()), dtype=numpy.uint8) + noise))
+                    bytearray(numpy.array(bytearray(decrypted_file.read()), dtype=numpy.uint8) ^ noise))
                 # This is the algorithm that encrypts the file.
                 end = time.perf_counter()
                 if verbose:
@@ -184,7 +184,7 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
                     start = time.perf_counter()  # This starts a timer to time the decryption.
                 noise = numpy.random.randint(0, 256, file_size, dtype=numpy.uint8)
                 decrypted_file.write(
-                    bytearray(numpy.array(bytearray(encrypted_file.read()), dtype=numpy.uint8) - noise))
+                    bytearray(numpy.array(bytearray(encrypted_file.read()), dtype=numpy.uint8) ^ noise))
                 # This is the algorithm that decrypts the file.
                 end = time.perf_counter()
                 if verbose:
