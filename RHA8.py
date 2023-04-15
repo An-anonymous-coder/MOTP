@@ -9,7 +9,7 @@ import typing
 
 import numpy
 
-# Test
+
 def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[str, None] = None,
             decryption_key: typing.Union[float, None] = None, verbose: bool = False) -> float:
     """
