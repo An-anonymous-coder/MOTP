@@ -101,10 +101,10 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
                 end = time.perf_counter()
                 if verbose:
                     seconds = end - start
-                speed = round(file_size / seconds)
-                print('[v] Encrypted in {seconds} seconds. ({speed:,} bytes per second)'.format(
-                    seconds=round(seconds, 2),
-                    speed=speed))
+                    speed = round(file_size / seconds)
+                    print('[v] Encrypted in {seconds} seconds. ({speed:,} bytes per second)'.format(
+                        seconds=round(seconds, 2),
+                        speed=speed))
             except Exception as exception:
                 encrypted_file.close()
                 os.remove(encrypted_file_path)  # This removes the partially encrypted file.
