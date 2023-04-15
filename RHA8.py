@@ -26,7 +26,7 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
     :param bool verbose: If this is set to True, this will print what the function is doing at each step. Otherwise,
         those print statements are hidden. Defaults to False.
     :return: The function returns the decryption key.
-    :rtype: int
+    :rtype: float
     """
     if not file_path:
         if verbose:
