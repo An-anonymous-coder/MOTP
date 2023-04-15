@@ -12,7 +12,6 @@ encrypt(file_path, password, decryption_key, verbose)
 decrypt(file_path, password, verbose)
 """
 import os
-import random
 import time
 import typing
 
@@ -20,7 +19,7 @@ import numpy  # https://numpy.org/install/
 
 
 def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[str, None] = None,
-            decryption_key: typing.Union[float, None] = None, verbose: bool = False) -> float:
+            decryption_key: typing.Union[str, None] = None, verbose: bool = False) -> str:
     """
     This function encrypts any file.
     :param file_path: This is the file path for the file to be encrypted. If none is provided, you will be prompted for
@@ -31,11 +30,11 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
     :type password: str or None
     :param decryption_key: This is a key used to decrypt the file and to randomize the encryption. If none is provided,
         one is generated for you, but you can use this if you would like to use your own. Defaults to None.
-    :type decryption_key: float or None
+    :type decryption_key: str or None
     :param bool verbose: If this is set to True, this will print what the function is doing at each step. Otherwise,
         those print statements are hidden. Defaults to False.
     :return: The function returns the decryption key.
-    :rtype: float
+    :rtype: str
     """
     if not file_path:
         if verbose:
@@ -66,7 +65,7 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
         if verbose:
             print('[v] Decryption key not provided.')
             print('[v] Generating decryption key...')
-        decryption_key = random.random()  # This generates a random decryption key.
+        decryption_key = str(numpy.random.random())  # This generates a random decryption key.
         if verbose:
             print('[v] Decryption key: {key}'.format(key=decryption_key))
     if verbose:
@@ -83,18 +82,17 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
             print('[v] Creating file... ({path})'.format(path=encrypted_file_path))
         with open(encrypted_file_path, 'wb') as encrypted_file:
             try:
-                encrypted_file.write((str(decryption_key) + ';').encode())
+                encrypted_file.write((decryption_key + ';').encode())
                 # The semicolon is used to separate the decryption key from the rest of the file.
-                random.seed(int.from_bytes(password.encode(), 'little') + decryption_key)
+                numpy.random.seed(bytearray((password + decryption_key).encode()))
                 # This randomizes the outcome of the encryption in a reversible way.
                 if verbose:
                     file_size = os.path.getsize(file_path)
                     print('[v] Encrypting file... ({size} bytes)'.format(size=file_size))
                     start = time.perf_counter()  # This starts a timer to time the encryption.
+                noise = numpy.random.randint(0, 256, file_size, dtype=numpy.uint8)
                 encrypted_file.write(
-                    bytearray(numpy.array(numpy.array(bytearray(decrypted_file.read())) + random.choices(range(256),
-                                                                                                         k=file_size),
-                                          dtype=numpy.uint8)))
+                    bytearray(numpy.array(bytearray(decrypted_file.read()), dtype=numpy.uint8) + noise))
                 # This is the algorithm that encrypts the file.
                 end = time.perf_counter()
                 if verbose:
@@ -171,8 +169,7 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
         while character != b';':
             decryption_key += character.decode()
             character = encrypted_file.read(1)
-        decryption_key = float(decryption_key)
-        random.seed(int.from_bytes(password.encode(), 'little') + decryption_key)
+        numpy.random.seed(bytearray((password + decryption_key).encode()))
         # This sets the random outcome to reverse the encryption.
         if verbose:
             print('[v] Creating file... ({path})'.format(path=decrypted_file_path))
@@ -182,10 +179,9 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
                     file_size = os.path.getsize(file_path) - len(str(decryption_key)) - 1
                     print('[v] Decrypting file... ({size} bytes)'.format(size=file_size))
                     start = time.perf_counter()  # This starts a timer to time the decryption.
+                noise = numpy.random.randint(0, 256, file_size, dtype=numpy.uint8)
                 decrypted_file.write(
-                    bytearray(numpy.array(numpy.array(bytearray(encrypted_file.read())) - random.choices(range(256),
-                                                                                                         k=file_size),
-                                          dtype=numpy.uint8)))
+                    bytearray(numpy.array(bytearray(encrypted_file.read()), dtype=numpy.uint8) - noise))
                 # This is the algorithm that decrypts the file.
                 end = time.perf_counter()
                 if verbose:
