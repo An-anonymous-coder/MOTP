@@ -1,7 +1,16 @@
 # coding=utf-8
-"""Reversible Hash Algorithm: 8-bit
+"""
+Reversible Hash Algorithm: 8-bit
 
-Compiled with <3 by an anonymous coder."""
+Compiled with <3 by an anonymous coder.
+
+GitHub repository: https://github.com/An-anonymous-coder/RHA8
+
+FUNCTIONS
+---------
+encrypt(file_path, password, decryption_key, verbose)
+decrypt(file_path, password, verbose)
+"""
 import os
 import random
 import time
