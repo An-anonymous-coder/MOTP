@@ -68,7 +68,7 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
         encrypted_file_path = file_path.rstrip(decrypted_file_name) + encrypted_file_name
         # This generates the file path used to store the encrypted file.
         if os.path.exists(encrypted_file_path):
-            print('[!] File {path} already exists.'.format(path=encrypted_file_path))
+            print('[!] File {path} already exists.\n'.format(path=encrypted_file_path))
             return decryption_key
         if verbose:
             print('[v] Creating file... ({path})'.format(path=encrypted_file_path))
@@ -150,7 +150,7 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
     decrypted_file_path = file_path.rstrip(os.path.basename(file_path)) + decrypted_file_name
     # This generates the file path used to store the decrypted file.
     if os.path.exists(decrypted_file_path):
-        print('[!] File {path} already exists.'.format(path=decrypted_file_path))
+        print('[!] File {path} already exists.\n'.format(path=decrypted_file_path))
         return
     if verbose:
         print('[v] Opening file...')
