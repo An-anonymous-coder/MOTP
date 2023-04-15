@@ -9,6 +9,7 @@ GitHub repository: https://github.com/An-anonymous-coder/RHA8
 FUNCTIONS
 ---------
 encrypt(file_path, password, decryption_key, verbose): Encrypts any file. Returns nothing.
+
 decrypt(file_path, password, verbose): Decrypts any file. Returns nothing.
 """
 import os
