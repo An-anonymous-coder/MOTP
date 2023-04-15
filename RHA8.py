@@ -90,8 +90,8 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
                 # The semicolon is used to separate the decryption key from the rest of the file.
                 numpy.random.seed(bytearray((password + decryption_key).encode()))
                 # This randomizes the outcome of the encryption in a reversible way.
+                file_size = os.path.getsize(file_path)
                 if verbose:
-                    file_size = os.path.getsize(file_path)
                     print('[v] Encrypting file... ({size} bytes)'.format(size=file_size))
                     start = time.perf_counter()  # This starts a timer to time the encryption.
                 noise = numpy.random.randint(0, 256, file_size, dtype=numpy.uint8)
@@ -178,8 +178,8 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
             print('[v] Creating file... ({path})'.format(path=decrypted_file_path))
         with open(decrypted_file_path, 'wb') as decrypted_file:
             try:
+                file_size = os.path.getsize(file_path) - len(str(decryption_key)) - 1
                 if verbose:
-                    file_size = os.path.getsize(file_path) - len(str(decryption_key)) - 1
                     print('[v] Decrypting file... ({size} bytes)'.format(size=file_size))
                     start = time.perf_counter()  # This starts a timer to time the decryption.
                 noise = numpy.random.randint(0, 256, file_size, dtype=numpy.uint8)
