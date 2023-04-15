@@ -55,7 +55,13 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
     if not password:
         if verbose:
             print('[v] Password not provided.')
-        password = input('Enter the password to encrypt the file: ')
+        while True:
+            password = input('Enter the password to encrypt the file: ')
+            if input('Enter the password again to verify it: ') == password:
+                if verbose:
+                    print('[v] Password verified.')
+                break
+            print('Passwords do not match.')
     elif verbose:
         print('[v] Password provided.')
     if decryption_key:
