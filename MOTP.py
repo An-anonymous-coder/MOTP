@@ -241,6 +241,9 @@ def destroy(file_path: typing.Union[str, None] = None, verbose: bool = False) ->
             print('[v] Finding decryption key...')
         decryption_key_length = 0
         character = encrypted_file.read(1)
+        if character != b'0':
+            print('[!] Decryption key is invalid or destroyed.')
+            return
         while character != b';':
             decryption_key_length += 1
             character = encrypted_file.read(1)
