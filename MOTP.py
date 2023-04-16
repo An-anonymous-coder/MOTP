@@ -1,10 +1,10 @@
 # coding=utf-8
 """
-Reversible Hash Algorithm: 8-bit
+Modified One-Time Pad
 
 Compiled with <3 by an anonymous coder.
 
-GitHub repository: https://github.com/An-anonymous-coder/RHA8
+GitHub repository: https://github.com/An-anonymous-coder/MOTP
 
 FUNCTIONS
 ---------
@@ -76,7 +76,7 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
     if verbose:
         print('[v] Opening file... ({path})'.format(path=file_path))
     with open(file_path, 'rb') as decrypted_file:
-        encrypted_file_name = decrypted_file_name + '.RHA8'
+        encrypted_file_name = decrypted_file_name + '.MOTP'
         # This generates a file name compatible with the `decrypt` function.
         encrypted_file_path = file_path.rstrip(decrypted_file_name) + encrypted_file_name
         # This generates the file path used to store the encrypted file.
@@ -143,7 +143,7 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
     while True:
         if verbose:
             print('[v] Checking file...')
-        if os.path.isfile(file_path) and os.path.exists(file_path) and file_path.endswith('.RHA8'):
+        if os.path.isfile(file_path) and os.path.exists(file_path) and file_path.endswith('.MOTP'):
             if verbose:
                 print('[v] File is valid.')
             break
