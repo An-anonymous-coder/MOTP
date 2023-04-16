@@ -146,12 +146,6 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
         else:
             print('File is invalid.')
             file_path = input('Enter the path of the file to decrypt: ')
-    if not password:
-        if verbose:
-            print('[v] No password provided.')
-        password = input('Enter the password to decrypt the file: ')
-    elif verbose:
-        print('[v] Password provided.')
     decrypted_file_name = os.path.splitext(os.path.basename(file_path))[0]
     decrypted_file_path = file_path.rstrip(os.path.basename(file_path)) + decrypted_file_name
     # This generates the file path used to store the decrypted file.
@@ -165,9 +159,18 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
             print('[v] Building decryption key...')
         decryption_key = ''
         character = encrypted_file.read(1)
+        if character != b'0':
+            print('[!] Decryption key is invalid or destroyed.')
+            return
         while character != b';':
             decryption_key += character.decode()
             character = encrypted_file.read(1)
+        if not password:
+            if verbose:
+                print('[v] No password provided.')
+            password = input('Enter the password to decrypt the file: ')
+        elif verbose:
+            print('[v] Password provided.')
         numpy.random.seed(bytearray((password + decryption_key).encode()))
         # This sets the random outcome to reverse the encryption.
         if verbose:
@@ -241,7 +244,7 @@ def destroy(file_path: typing.Union[str, None] = None, verbose: bool = False) ->
         while character != b';':
             decryption_key_length += 1
             character = encrypted_file.read(1)
-        data = encrypted_file.read()
+        data = b';' + encrypted_file.read()
     encrypted_file.close()
     file_size = os.path.getsize(file_path) - decryption_key_length - 1
     with open(file_path, 'wb') as encrypted_file:
