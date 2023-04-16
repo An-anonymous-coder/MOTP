@@ -11,6 +11,8 @@ FUNCTIONS
 encrypt(file_path, password, decryption_key, verbose): Encrypts any file. Returns nothing.
 
 decrypt(file_path, password, verbose): Decrypts any file. Returns nothing.
+
+destroy(file_path, verbose): Destroys the decryption key for a file. Returns nothing.
 """
 import os
 import time
@@ -84,13 +86,13 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
             print('[!] File {path} already exists.\n'.format(path=encrypted_file_path))
         if verbose:
             print('[v] Creating file... ({path})'.format(path=encrypted_file_path))
+        file_size = os.path.getsize(file_path)
         with open(encrypted_file_path, 'wb') as encrypted_file:
             try:
                 encrypted_file.write((decryption_key + ';').encode())
                 # The semicolon is used to separate the decryption key from the rest of the file.
                 numpy.random.seed(bytearray((password + decryption_key).encode()))
                 # This randomizes the outcome of the encryption in a reversible way.
-                file_size = os.path.getsize(file_path)
                 if verbose:
                     print('[v] Encrypting file... ({size} bytes)'.format(size=file_size))
                     start = time.perf_counter()  # This starts a timer to time the encryption.
@@ -108,6 +110,7 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
             except Exception as exception:
                 encrypted_file.close()
                 os.remove(encrypted_file_path)  # This removes the partially encrypted file.
+                decrypted_file.close()
                 raise exception
         if verbose:
             print('[v] Closing files...')
@@ -176,9 +179,9 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
         # This sets the random outcome to reverse the encryption.
         if verbose:
             print('[v] Creating file... ({path})'.format(path=decrypted_file_path))
+        file_size = os.path.getsize(file_path) - len(decryption_key) - 1
         with open(decrypted_file_path, 'wb') as decrypted_file:
             try:
-                file_size = os.path.getsize(file_path) - len(str(decryption_key)) - 1
                 if verbose:
                     print('[v] Decrypting file... ({size} bytes)'.format(size=file_size))
                     start = time.perf_counter()  # This starts a timer to time the decryption.
@@ -196,6 +199,7 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
             except Exception as exception:
                 decrypted_file.close()
                 os.remove(decrypted_file_path)  # This removes the partially decrypted file.
+                encrypted_file.close()
                 raise exception
         if verbose:
             print('[v] Closing files...')
@@ -207,3 +211,59 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
     print('Decrypted as: {name}'.format(name=decrypted_file_name))
     if verbose:
         print('[v] Done!\n')
+
+
+def destroy(file_path: typing.Union[str, None] = None, verbose: bool = False) -> None:
+    """
+    This function destroys the decryption key in an encrypted file, making it impossible to decrypt. This does not
+    delete the file. The key could be recovered via brute force.
+    :param file_path: This is the path of the file to have the key of destroyed.
+    :type file_path: str or None
+    :param bool verbose: If this is set to True, this will print what the function is doing at each step. Otherwise,
+        those print statements are hidden. Defaults to False.
+    """
+    if not file_path:
+        if verbose:
+            print('[v] No file provided.')
+        file_path = input('Enter the path of the file to decrypt: ')
+    elif verbose:
+        print('[v] File provided.')
+    while True:
+        if verbose:
+            print('[v] Checking file...')
+        if os.path.isfile(file_path) and os.path.exists(file_path) and file_path.endswith('.MOTP'):
+            if verbose:
+                print('[v] File is valid.')
+            break
+        else:
+            print('File is invalid.')
+            file_path = input('Enter the path of the file to decrypt: ')
+    if verbose:
+        print('[v] Opening file...')
+    with open(file_path, 'rb') as encrypted_file:
+        if verbose:
+            print('[v] Finding decryption key...')
+        decryption_key_length = 0
+        character = encrypted_file.read(1)
+        while character != b';':
+            decryption_key_length += 1
+            character = encrypted_file.read(1)
+        data = encrypted_file.read()
+    encrypted_file.close()
+    file_size = os.path.getsize(file_path) - decryption_key_length - 1
+    with open(file_path, 'wb') as encrypted_file:
+        try:
+            if verbose:
+                print('[v] Writing to file... ({size} bytes)'.format(size=file_size))
+                start = time.perf_counter()  # This starts a timer to time the decryption.
+            encrypted_file.write(data)
+            end = time.perf_counter()
+            if verbose:
+                seconds = end - start
+                speed = round(file_size / seconds)
+                print('[v] Wrote in {seconds} seconds. ({speed:,} bytes per second)'.format(seconds=round(seconds, 2),
+                                                                                            speed=speed))
+        except Exception as exception:
+            encrypted_file.close()
+            raise exception
+    encrypted_file.close()
