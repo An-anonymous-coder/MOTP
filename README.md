@@ -1,2 +1,2 @@
-# RHA8
-This is the GitHub repository for the RHA8 (Reversable Hash Algorithm: 8-bit) project.
+# MOTP
+This is the GitHub repository for the MOTP (Modified One-Time Pad) project.
