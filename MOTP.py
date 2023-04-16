@@ -254,7 +254,7 @@ def destroy(file_path: typing.Union[str, None] = None, verbose: bool = False) ->
         try:
             if verbose:
                 print('[v] Writing to file... ({size} bytes)'.format(size=file_size))
-                start = time.perf_counter()  # This starts a timer to time the decryption.
+                start = time.perf_counter()  # This starts a timer to time the writing.
             encrypted_file.write(data)
             end = time.perf_counter()
             if verbose:
