@@ -19,6 +19,7 @@ import typing
 import numpy  # https://numpy.org/install/
 
 
+# hgf
 def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[str, None] = None,
             decryption_key: typing.Union[str, None] = None, verbose: bool = False) -> None:
     """
