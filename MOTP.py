@@ -11,8 +11,6 @@ FUNCTIONS
 encrypt(file_path, password, verbose): Encrypts any file. Returns nothing.
 
 decrypt(file_path, password, verbose): Decrypts any file. Returns nothing.
-
-destroy(file_path, verbose): Destroys the decryption key for a file. Returns nothing.
 """
 import os
 import time
@@ -82,17 +80,39 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
         file_size = os.path.getsize(file_path)
         with open(encrypted_file_path, 'wb') as encrypted_file:
             try:
-                encrypted_file.write((decryption_key + ';').encode())
+                encrypted_file.write((decryption_key + '\n').encode())
                 # The semicolon is used to separate the decryption key from the rest of the file.
                 numpy.random.seed(bytearray((password + decryption_key).encode()))
                 # This randomizes the outcome of the encryption in a reversible way.
                 if verbose:
                     print('[v] Encrypting file... ({size} bytes)'.format(size=file_size))
                     start = time.perf_counter()  # This starts a timer to time the encryption.
-                pad = numpy.random.randint(0, 256, file_size, dtype=numpy.uint8)
-                encrypted_file.write(
-                    bytearray(numpy.array(bytearray(decrypted_file.read()), dtype=numpy.uint8) ^ pad))
-                # This is the algorithm that encrypts the file.
+
+                def generate_pad(size: int) -> numpy.ndarray:
+                    """
+                    This generates a pseudorandom pad for the encryption.
+                    :param int size: This is the size of the pad.
+                    :return: Returns a numpy.ndarray of the pad.
+                    :rtype: numpy.ndarray
+                    """
+                    return numpy.random.randint(0, 256, size, dtype=numpy.uint8)
+
+                def apply_pad(data: bytes, pad: numpy.ndarray) -> bytearray:
+                    """
+                    This is the function that encrypts the data.
+                    :param bytes data: This is the data to encrypt.
+                    :param numpy.ndarray pad: This is the pad to encrypt the data with.
+                    :return: Returns the encrypted data.
+                    :rtype: bytearray
+                    """
+                    return bytearray(numpy.array(bytearray(data), dtype=numpy.uint8) ^ pad)
+
+                max_size = 1024 * 1024 * 1024
+                # This is the maximum size (in bytes) per chunk. This can be higher based on your RAM.
+                for _ in range(int(file_size / max_size)):
+                    encrypted_file.write(apply_pad(decrypted_file.read(max_size), generate_pad(max_size)))
+                excess_size = file_size % max_size
+                encrypted_file.write(apply_pad(decrypted_file.read(excess_size), generate_pad(excess_size)))
                 end = time.perf_counter()
                 if verbose:
                     seconds = end - start
@@ -114,7 +134,8 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
     os.remove(file_path)  # This removes the decrypted file.
     print('Encrypted as: {name}'.format(name=encrypted_file_name))
     if verbose:
-        print('[v] Done!\n')
+        print('[v] Done!')
+    print()
 
 
 def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[str, None] = None,
@@ -157,14 +178,12 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
     with open(file_path, 'rb') as encrypted_file:
         if verbose:
             print('[v] Building decryption key...')
-        decryption_key = ''
-        character = encrypted_file.read(1)
-        if character != b'0':
+        decryption_key = encrypted_file.readlines(1)[0].decode().rstrip()
+        try:
+            float(decryption_key)
+        except ValueError:
             print('[!] Decryption key is invalid or destroyed.')
             return
-        while character != b';':
-            decryption_key += character.decode()
-            character = encrypted_file.read(1)
         if not password:
             if verbose:
                 print('[v] No password provided.')
@@ -181,10 +200,32 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
                 if verbose:
                     print('[v] Decrypting file... ({size} bytes)'.format(size=file_size))
                     start = time.perf_counter()  # This starts a timer to time the decryption.
-                pad = numpy.random.randint(0, 256, file_size, dtype=numpy.uint8)
-                decrypted_file.write(
-                    bytearray(numpy.array(bytearray(encrypted_file.read()), dtype=numpy.uint8) ^ pad))
-                # This is the algorithm that decrypts the file.
+
+                def generate_pad(size: int) -> numpy.ndarray:
+                    """
+                    This generates a pseudorandom pad for the encryption.
+                    :param int size: This is the size of the pad.
+                    :return: Returns a numpy.ndarray of the pad.
+                    :rtype: numpy.ndarray
+                    """
+                    return numpy.random.randint(0, 256, size, dtype=numpy.uint8)
+
+                def apply_pad(data: bytes, pad: numpy.ndarray) -> bytearray:
+                    """
+                    This is the function that encrypts the data.
+                    :param bytes data: This is the data to encrypt.
+                    :param numpy.ndarray pad: This is the pad to encrypt the data with.
+                    :return: Returns the encrypted data.
+                    :rtype: bytearray
+                    """
+                    return bytearray(numpy.array(bytearray(data), dtype=numpy.uint8) ^ pad)
+
+                max_size = 1024 * 1024 * 1024
+                # This is the maximum size (in bytes) per chunk. This can be higher based on your RAM.
+                for _ in range(int(file_size / max_size)):
+                    decrypted_file.write(apply_pad(encrypted_file.read(max_size), generate_pad(max_size)))
+                excess_size = file_size % max_size
+                decrypted_file.write(apply_pad(encrypted_file.read(excess_size), generate_pad(excess_size)))
                 end = time.perf_counter()
                 if verbose:
                     seconds = end - start
@@ -206,9 +247,17 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
     os.remove(file_path)  # This removes the encrypted file.
     print('Decrypted as: {name}'.format(name=decrypted_file_name))
     if verbose:
-        print('[v] Done!\n')
+        print('[v] Done!')
+    print()
 
 
+# Discontinued due to extra byte after destroying
+'''Possible cause: When you save a .txt file (and possibly others?) it will append a hidden \n to the end (only on some
+programs/operating systems?) and so when the file is copied without the key it adds another newline (I think?).'''
+"""
+destroy(file_path, verbose): Destroys the decryption key for a file. Returns nothing.
+"""
+'''
 def destroy(file_path: typing.Union[str, None] = None, verbose: bool = False) -> None:
     """
     This function destroys the decryption key in an encrypted file, making it impossible to decrypt. This does not
@@ -221,7 +270,7 @@ def destroy(file_path: typing.Union[str, None] = None, verbose: bool = False) ->
     if not file_path:
         if verbose:
             print('[v] No file provided.')
-        file_path = input('Enter the path of the file to decrypt: ')
+        file_path = input('Enter the path of the file to destroy the key for: ')
     elif verbose:
         print('[v] File provided.')
     while True:
@@ -233,21 +282,20 @@ def destroy(file_path: typing.Union[str, None] = None, verbose: bool = False) ->
             break
         else:
             print('File is invalid.')
-            file_path = input('Enter the path of the file to decrypt: ')
+            file_path = input('Enter the path of the file to destroy the key for: ')
     if verbose:
         print('[v] Opening file...')
     with open(file_path, 'rb') as encrypted_file:
         if verbose:
             print('[v] Finding decryption key...')
-        decryption_key_length = 0
-        character = encrypted_file.read(1)
-        if character != b'0':
+        decryption_key = encrypted_file.readlines(1)[0].decode().rstrip()
+        try:
+            float(decryption_key)
+        except ValueError:
             print('[!] Decryption key is invalid or destroyed.')
             return
-        while character != b';':
-            decryption_key_length += 1
-            character = encrypted_file.read(1)
-        data = b';' + encrypted_file.read()
+        decryption_key_length = len(decryption_key)
+        data = b'\n' + encrypted_file.read()
     encrypted_file.close()
     file_size = os.path.getsize(file_path) - decryption_key_length - 1
     with open(file_path, 'wb') as encrypted_file:
@@ -266,3 +314,7 @@ def destroy(file_path: typing.Union[str, None] = None, verbose: bool = False) ->
             encrypted_file.close()
             raise exception
     encrypted_file.close()
+    if verbose:
+        print('[v] Done!')
+    print()
+'''
