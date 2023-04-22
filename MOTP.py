@@ -203,7 +203,7 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
 
                 def generate_pad(size: int) -> numpy.ndarray:
                     """
-                    This generates a pseudorandom pad for the encryption.
+                    This generates a pseudorandom pad for the decryption.
                     :param int size: This is the size of the pad.
                     :return: Returns a numpy.ndarray of the pad.
                     :rtype: numpy.ndarray
@@ -212,10 +212,10 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
 
                 def apply_pad(data: bytes, pad: numpy.ndarray) -> bytearray:
                     """
-                    This is the function that encrypts the data.
-                    :param bytes data: This is the data to encrypt.
-                    :param numpy.ndarray pad: This is the pad to encrypt the data with.
-                    :return: Returns the encrypted data.
+                    This is the function that decrypts the data.
+                    :param bytes data: This is the data to decrypt.
+                    :param numpy.ndarray pad: This is the pad to decrypt the data with.
+                    :return: Returns the decrypted data.
                     :rtype: bytearray
                     """
                     return bytearray(numpy.array(bytearray(data), dtype=numpy.uint8) ^ pad)
