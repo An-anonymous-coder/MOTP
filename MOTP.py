@@ -77,38 +77,37 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
         # This generates the file path used to store the encrypted file.
         if os.path.exists(encrypted_file_path):
             print('[!] File {path} already exists.\n'.format(path=encrypted_file_path))
+
+        def generate_pad(size: int) -> numpy.ndarray:
+            """
+            This generates a pseudorandom pad for the encryption.
+            :param int size: This is the size of the pad.
+            :return: Returns a numpy.ndarray of the pad.
+            :rtype: numpy.ndarray
+            """
+            return numpy.random.randint(0, 256, size, dtype=numpy.uint8)
+
+        def apply_pad(data: bytes, pad: numpy.ndarray) -> bytearray:
+            """
+            This is the function that encrypts the data.
+            :param bytes data: This is the data to encrypt.
+            :param numpy.ndarray pad: This is the pad to encrypt the data with.
+            :return: Returns the encrypted data.
+            :rtype: bytearray
+            """
+            return bytearray(numpy.array(bytearray(data), dtype=numpy.uint8) ^ pad)
+
         if verbose:
             print('[v] Creating file... ({path})'.format(path=encrypted_file_path))
         file_size = os.path.getsize(file_path)
+        max_size = 1024 * 1024 * 1024
+        # This is the maximum size (in bytes) per chunk. This can be higher based on your RAM.
         with open(encrypted_file_path, 'wb') as encrypted_file:
             try:
                 encrypted_file.write((decryption_key + '\n').encode())
                 # The semicolon is used to separate the decryption key from the rest of the file.
                 numpy.random.seed(bytearray((password + decryption_key).encode()))
-
                 # This randomizes the outcome of the encryption in a reversible way.
-
-                def generate_pad(size: int) -> numpy.ndarray:
-                    """
-                    This generates a pseudorandom pad for the encryption.
-                    :param int size: This is the size of the pad.
-                    :return: Returns a numpy.ndarray of the pad.
-                    :rtype: numpy.ndarray
-                    """
-                    return numpy.random.randint(0, 256, size, dtype=numpy.uint8)
-
-                def apply_pad(data: bytes, pad: numpy.ndarray) -> bytearray:
-                    """
-                    This is the function that encrypts the data.
-                    :param bytes data: This is the data to encrypt.
-                    :param numpy.ndarray pad: This is the pad to encrypt the data with.
-                    :return: Returns the encrypted data.
-                    :rtype: bytearray
-                    """
-                    return bytearray(numpy.array(bytearray(data), dtype=numpy.uint8) ^ pad)
-
-                max_size = 1024 * 1024 * 1024
-                # This is the maximum size (in bytes) per chunk. This can be higher based on your RAM.
                 if verbose:
                     print('[v] Encrypting file... ({size} bytes)'.format(size=file_size))
                     start = time.perf_counter()  # This starts a timer to time the encryption.
@@ -193,35 +192,35 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
             password = input('Enter the password to decrypt the file: ')
         elif verbose:
             print('[v] Password provided.')
-        numpy.random.seed(bytearray((password + decryption_key).encode()))
-        # This sets the random outcome to reverse the encryption.
+
+        def generate_pad(size: int) -> numpy.ndarray:
+            """
+            This generates a pseudorandom pad for the decryption.
+            :param int size: This is the size of the pad.
+            :return: Returns a numpy.ndarray of the pad.
+            :rtype: numpy.ndarray
+            """
+            return numpy.random.randint(0, 256, size, dtype=numpy.uint8)
+
+        def apply_pad(data: bytes, pad: numpy.ndarray) -> bytearray:
+            """
+            This is the function that decrypts the data.
+            :param bytes data: This is the data to decrypt.
+            :param numpy.ndarray pad: This is the pad to decrypt the data with.
+            :return: Returns the decrypted data.
+            :rtype: bytearray
+            """
+            return bytearray(numpy.array(bytearray(data), dtype=numpy.uint8) ^ pad)
+
         if verbose:
             print('[v] Creating file... ({path})'.format(path=decrypted_file_path))
         file_size = os.path.getsize(file_path) - len(decryption_key) - 1
+        max_size = 1024 * 1024 * 1024
+        # This is the maximum size (in bytes) per chunk. This can be higher based on your RAM.
         with open(decrypted_file_path, 'wb') as decrypted_file:
             try:
-
-                def generate_pad(size: int) -> numpy.ndarray:
-                    """
-                    This generates a pseudorandom pad for the decryption.
-                    :param int size: This is the size of the pad.
-                    :return: Returns a numpy.ndarray of the pad.
-                    :rtype: numpy.ndarray
-                    """
-                    return numpy.random.randint(0, 256, size, dtype=numpy.uint8)
-
-                def apply_pad(data: bytes, pad: numpy.ndarray) -> bytearray:
-                    """
-                    This is the function that decrypts the data.
-                    :param bytes data: This is the data to decrypt.
-                    :param numpy.ndarray pad: This is the pad to decrypt the data with.
-                    :return: Returns the decrypted data.
-                    :rtype: bytearray
-                    """
-                    return bytearray(numpy.array(bytearray(data), dtype=numpy.uint8) ^ pad)
-
-                max_size = 1024 * 1024 * 1024
-                # This is the maximum size (in bytes) per chunk. This can be higher based on your RAM.
+                numpy.random.seed(bytearray((password + decryption_key).encode()))
+                # This sets the random outcome to reverse the encryption.
                 if verbose:
                     print('[v] Decrypting file... ({size} bytes)'.format(size=file_size))
                     start = time.perf_counter()  # This starts a timer to time the decryption.
