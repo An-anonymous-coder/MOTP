@@ -11,6 +11,8 @@ FUNCTIONS
 encrypt(file_path, password, verbose): Encrypts any file. Returns nothing.
 
 decrypt(file_path, password, verbose): Decrypts any file. Returns nothing.
+
+destroy(file_path, verbose): Destroys the decryption key for a file. Returns nothing.
 """
 import os
 import time
@@ -251,17 +253,10 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
     print()
 
 
-# Discontinued due to extra byte after destroying
-'''Possible cause: When you save a .txt file (and possibly others?) it will append a hidden \n to the end (only on some
-programs/operating systems?) and so when the file is copied without the key it adds another newline (I think?).'''
-"""
-destroy(file_path, verbose): Destroys the decryption key for a file. Returns nothing.
-"""
-'''
 def destroy(file_path: typing.Union[str, None] = None, verbose: bool = False) -> None:
     """
     This function destroys the decryption key in an encrypted file, making it impossible to decrypt. This does not
-    delete the file. The key could be recovered via brute force.
+    delete the file. The key could be recovered via brute force. May cause MemoryError for large files.
     :param file_path: This is the path of the file to have the key of destroyed.
     :type file_path: str or None
     :param bool verbose: If this is set to True, this will print what the function is doing at each step. Otherwise,
@@ -317,4 +312,3 @@ def destroy(file_path: typing.Union[str, None] = None, verbose: bool = False) ->
     if verbose:
         print('[v] Done!')
     print()
-'''
