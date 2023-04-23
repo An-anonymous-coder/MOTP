@@ -85,10 +85,8 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
                 encrypted_file.write((decryption_key + '\n').encode())
                 # The semicolon is used to separate the decryption key from the rest of the file.
                 numpy.random.seed(bytearray((password + decryption_key).encode()))
+
                 # This randomizes the outcome of the encryption in a reversible way.
-                if verbose:
-                    print('[v] Encrypting file... ({size} bytes)'.format(size=file_size))
-                    start = time.perf_counter()  # This starts a timer to time the encryption.
 
                 def generate_pad(size: int) -> numpy.ndarray:
                     """
@@ -111,6 +109,9 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
 
                 max_size = 1024 * 1024 * 1024
                 # This is the maximum size (in bytes) per chunk. This can be higher based on your RAM.
+                if verbose:
+                    print('[v] Encrypting file... ({size} bytes)'.format(size=file_size))
+                    start = time.perf_counter()  # This starts a timer to time the encryption.
                 for _ in range(int(file_size / max_size)):
                     encrypted_file.write(apply_pad(decrypted_file.read(max_size), generate_pad(max_size)))
                 excess_size = file_size % max_size
@@ -199,9 +200,6 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
         file_size = os.path.getsize(file_path) - len(decryption_key) - 1
         with open(decrypted_file_path, 'wb') as decrypted_file:
             try:
-                if verbose:
-                    print('[v] Decrypting file... ({size} bytes)'.format(size=file_size))
-                    start = time.perf_counter()  # This starts a timer to time the decryption.
 
                 def generate_pad(size: int) -> numpy.ndarray:
                     """
@@ -224,6 +222,9 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
 
                 max_size = 1024 * 1024 * 1024
                 # This is the maximum size (in bytes) per chunk. This can be higher based on your RAM.
+                if verbose:
+                    print('[v] Decrypting file... ({size} bytes)'.format(size=file_size))
+                    start = time.perf_counter()  # This starts a timer to time the decryption.
                 for _ in range(int(file_size / max_size)):
                     decrypted_file.write(apply_pad(encrypted_file.read(max_size), generate_pad(max_size)))
                 excess_size = file_size % max_size
