@@ -102,6 +102,7 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
         file_size = os.path.getsize(file_path)
         max_size = 1024 * 1024 * 1024
         # This is the maximum size (in bytes) per chunk. This can be higher based on your RAM.
+        # THE FILE MUST BE DECRYPTED WITH THE SAME CHUNK SIZE YOU ENCRYPTED IT WITH.
         with open(encrypted_file_path, 'wb') as encrypted_file:
             try:
                 encrypted_file.write((decryption_key + '\n').encode())
@@ -217,6 +218,7 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
         file_size = os.path.getsize(file_path) - len(decryption_key) - 1
         max_size = 1024 * 1024 * 1024
         # This is the maximum size (in bytes) per chunk. This can be higher based on your RAM.
+        # THE FILE MUST BE DECRYPTED WITH THE SAME CHUNK SIZE YOU ENCRYPTED IT WITH.
         with open(decrypted_file_path, 'wb') as decrypted_file:
             try:
                 numpy.random.seed(bytearray((password + decryption_key).encode()))
