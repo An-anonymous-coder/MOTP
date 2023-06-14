@@ -109,10 +109,8 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
             try:
                 encrypted_file.write((decryption_key + '\n').encode())
                 # The newline is used to separate the decryption key from the rest of the file.
-                rng = numpy.random.default_rng(seed=numpy.array(bytearray((password + decryption_key).encode())))
+                rng = numpy.random.default_rng(seed=int.from_bytes(bytes((password + decryption_key).encode()), 'big'))
                 # This randomizes the outcome of the encryption in a reversible way.
-                # Why there is an error: This will work fine since numpy.array() is an array_like[ints], though it is
-                # not "formally" listed as a working type
                 if verbose:
                     print('[v] Encrypting file... ({size} bytes)'.format(size=file_size))
                     start = time.perf_counter()  # This starts a timer to time the encryption.
@@ -227,10 +225,8 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
         # THE FILE MUST BE DECRYPTED WITH THE SAME CHUNK SIZE YOU ENCRYPTED IT WITH.
         with open(decrypted_file_path, 'wb') as decrypted_file:
             try:
-                rng = numpy.random.default_rng(seed=numpy.array(bytearray((password + decryption_key).encode())))
+                rng = numpy.random.default_rng(seed=int.from_bytes(bytes((password + decryption_key).encode()), 'big'))
                 # This sets the random outcome to reverse the encryption.
-                # Why there is an error: This will work fine since numpy.array() is an array_like[ints], though it is
-                # not "formally" listed as a working type
                 if verbose:
                     print('[v] Decrypting file... ({size} bytes)'.format(size=file_size))
                     start = time.perf_counter()  # This starts a timer to time the decryption.
