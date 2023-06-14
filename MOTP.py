@@ -20,6 +20,15 @@ import typing
 
 import numpy  # https://numpy.org/install/
 
+red = '\u001b[38;2;255;0;0m'
+yellow = '\u001b[38;2;255;255;0m'
+green = '\u001b[38;2;0;255;0m'
+cyan = '\u001b[38;2;0;255;255m'
+blue = '\u001b[38;2;0;127;255m'  # Technically azure
+grey = '\u001b[38;2;127;127;127m'
+bold = '\u001b[1m'
+reset = '\u001b[0m'
+
 
 def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[str, None] = None,
             verbose: bool = False) -> None:
@@ -36,47 +45,52 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
     """
     if not file_path:
         if verbose:
-            print('[v] No file provided.')
-        file_path = input('Enter the path of the file to encrypt: ')
+            print('{blue}[v] {yellow}No file provided.{reset}'.format(blue=blue, yellow=yellow, reset=reset))
+        file_path = input('{bold}Enter the path of the file to encrypt: {reset}'.format(bold=bold, reset=reset))
     elif verbose:
-        print('[v] File provided.')
+        print('{blue}[v] {green}File provided.{reset}'.format(blue=blue, green=green, reset=reset))
     while True:
         if verbose:
-            print('[v] Checking file...')
+            print('{blue}[v] {grey}Checking file...{reset}'.format(blue=blue, grey=grey, reset=reset))
         if os.path.isfile(file_path) and os.path.exists(file_path):
             if verbose:
-                print('[v] File is valid.')
+                print('{blue}[v] {green}File is valid.{reset}'.format(blue=blue, green=green, reset=reset))
             break
         else:
-            print('File is invalid.')
-            file_path = input('Enter the path of the file to encrypt: ')
+            print('{red}File is invalid.{reset}'.format(red=red, reset=reset))
+            file_path = input('{bold}Enter the path of the file to encrypt: {reset}'.format(bold=bold, reset=reset))
     decrypted_file_name = os.path.basename(file_path)
     if not password:
         if verbose:
-            print('[v] Password not provided.')
+            print('{blue}[v] {yellow}Password not provided.{reset}'.format(blue=blue, yellow=yellow, reset=reset))
         while True:
-            password = input('Enter the password to encrypt the file: ')
-            if input('Enter the password again to verify it: ') == password:
+            password = input('{bold}Enter the password to encrypt the file: {reset}'.format(bold=bold, reset=reset))
+            if input('{bold}Enter the password again to verify it: {reset}'.format(bold=bold, reset=reset)) == password:
                 if verbose:
-                    print('[v] Password verified.')
+                    print('{blue}[v] {green}Password verified.{reset}'.format(blue=blue, green=green, reset=reset))
                 break
-            print('Passwords do not match.')
+            print('{red}Passwords do not match.{reset}'.format(red=red, reset=reset))
     elif verbose:
-        print('[v] Password provided.')
+        print('{blue}[v] {green}Password provided.{reset}'.format(blue=blue, green=green, reset=reset))
     if verbose:
-        print('[v] Generating decryption key...')
+        print('{blue}[v] {grey}Generating decryption key...{reset}'.format(blue=blue, grey=grey, reset=reset))
     decryption_key = str(numpy.random.default_rng().random())  # This generates a random decryption key.
     if verbose:
-        print('[v] Decryption key: {key}'.format(key=decryption_key))
+        print('{blue}[v] {cyan}Decryption key: {reset}{bold}{key}{reset}'.format(blue=blue, cyan=cyan, bold=bold,
+                                                                                 reset=reset,
+                                                                                 key=decryption_key))
     if verbose:
-        print('[v] Opening file... ({path})'.format(path=file_path))
+        print('{blue}[v] {grey}Opening file... ({green}{path}{grey}){reset}'.format(blue=blue, grey=grey, green=green,
+                                                                                    reset=reset, path=file_path))
     with open(file_path, 'rb') as decrypted_file:
         encrypted_file_name = decrypted_file_name + '.MOTP'
         # This generates a file name compatible with the `decrypt` function.
         encrypted_file_path = file_path.rstrip(decrypted_file_name) + encrypted_file_name
         # This generates the file path used to store the encrypted file.
         if os.path.exists(encrypted_file_path):
-            print('[!] File {path} already exists.\n'.format(path=encrypted_file_path))
+            print(
+                '{red}[!] File {green}{path} {red}already exists.{reset}\n'.format(red=red, green=green, reset=reset,
+                                                                                   path=encrypted_file_path))
 
         def generate_pad(seed, size: int) -> numpy.ndarray:
             """
@@ -100,7 +114,9 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
             return bytearray(numpy.array(bytearray(data), dtype=numpy.uint8) ^ pad)
 
         if verbose:
-            print('[v] Creating file... ({path})'.format(path=encrypted_file_path))
+            print('{blue}[v] {grey}Creating file... ({green}{path}{grey}){reset}'.format(blue=blue, grey=grey,
+                                                                                         green=green, reset=reset,
+                                                                                         path=encrypted_file_path))
         file_size = os.path.getsize(file_path)
         max_size = 1024 * 1024 * 1024
         # This is the maximum size (in bytes) per chunk. This can be higher based on your RAM.
@@ -112,7 +128,11 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
                 rng = numpy.random.default_rng(seed=int.from_bytes(bytes((password + decryption_key).encode()), 'big'))
                 # This randomizes the outcome of the encryption in a reversible way.
                 if verbose:
-                    print('[v] Encrypting file... ({size} bytes)'.format(size=file_size))
+                    print('{blue}[v] {grey}Encrypting file... ({cyan}{size} bytes{grey}){reset}'.format(blue=blue,
+                                                                                                        grey=grey,
+                                                                                                        cyan=cyan,
+                                                                                                        reset=reset,
+                                                                                                        size=file_size))
                     start = time.perf_counter()  # This starts a timer to time the encryption.
                 for _ in range(int(file_size / max_size)):
                     encrypted_file.write(apply_pad(decrypted_file.read(max_size), generate_pad(rng, max_size)))
@@ -122,24 +142,24 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
                 if verbose:
                     seconds = end - start
                     speed = round(file_size / seconds)
-                    print('[v] Encrypted in {seconds} seconds. ({speed:,} bytes per second)'.format(
-                        seconds=round(seconds, 2),
-                        speed=speed))
+                    message = '{blue}[v] {grey}Encrypted in {seconds} seconds. ({cyan}{speed:,} bytes per second{grey})'
+                    print((message + reset).format(blue=blue, grey=grey, cyan=cyan, seconds=round(seconds, 2),
+                                                   speed=speed))
             except Exception as exception:
                 encrypted_file.close()
                 os.remove(encrypted_file_path)  # This removes the partially encrypted file.
                 decrypted_file.close()
                 raise exception
         if verbose:
-            print('[v] Closing files...')
+            print('{blue}[v] {grey}Closing files...{reset}'.format(blue=blue, grey=grey, reset=reset))
         encrypted_file.close()
     decrypted_file.close()
     if verbose:
-        print('[v] Cleaning up...')
+        print('{blue}[v] {grey}Cleaning up...{reset}'.format(blue=blue, grey=grey, reset=reset))
     os.remove(file_path)  # This removes the decrypted file.
-    print('Encrypted as: {name}'.format(name=encrypted_file_name))
+    print('Encrypted as: {green}{name}{reset}'.format(green=green, reset=reset, name=encrypted_file_name))
     if verbose:
-        print('[v] Done!')
+        print('{blue}[v] {green}Done!{reset}'.format(blue=blue, green=green, reset=reset))
     print()
 
 
@@ -158,43 +178,44 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
     """
     if not file_path:
         if verbose:
-            print('[v] No file provided.')
-        file_path = input('Enter the path of the file to decrypt: ')
+            print('{blue}[v] {yellow}No file provided.{reset}'.format(blue=blue, yellow=yellow, reset=reset))
+        file_path = input('{bold}Enter the path of the file to decrypt: {reset}'.format(bold=bold, reset=reset))
     elif verbose:
-        print('[v] File provided.')
+        print('{blue}[v] {green}File provided.{reset}'.format(blue=blue, green=green, reset=reset))
     while True:
         if verbose:
-            print('[v] Checking file...')
+            print('{blue}[v] {grey}Checking file...{reset}'.format(blue=blue, grey=grey, reset=reset))
         if os.path.isfile(file_path) and os.path.exists(file_path) and file_path.endswith('.MOTP'):
             if verbose:
-                print('[v] File is valid.')
+                print('{blue}[v] {green}File is valid.{reset}'.format(blue=blue, green=green, reset=reset))
             break
         else:
-            print('File is invalid.')
-            file_path = input('Enter the path of the file to decrypt: ')
+            print('{red}File is invalid.{reset}'.format(red=red, reset=reset))
+            file_path = input('{bold}Enter the path of the file to decrypt: {reset}'.format(bold=bold, reset=reset))
     decrypted_file_name = os.path.splitext(os.path.basename(file_path))[0]
     decrypted_file_path = file_path.rstrip(os.path.basename(file_path)) + decrypted_file_name
     # This generates the file path used to store the decrypted file.
     if os.path.exists(decrypted_file_path):
-        print('[!] File {path} already exists.\n'.format(path=decrypted_file_path))
+        print('{red}[!] File {green}{path} {red}already exists.{reset}\n'.format(red=red, green=green, reset=reset,
+                                                                                 path=decrypted_file_path))
         return
     if verbose:
-        print('[v] Opening file...')
+        print('{blue}[v] {grey}Opening file...{reset}'.format(blue=blue, grey=grey, reset=reset))
     with open(file_path, 'rb') as encrypted_file:
         if verbose:
-            print('[v] Building decryption key...')
+            print('{blue}[v] {grey}Building decryption key...{reset}'.format(blue=blue, grey=grey, reset=reset))
         decryption_key = encrypted_file.readlines(1)[0].decode().rstrip()
         try:
             float(decryption_key)
         except ValueError:
-            print('[!] Decryption key is invalid or destroyed.')
+            print('{red}[!] Decryption key is invalid or destroyed.{reset}'.format(red=red, reset=reset))
             return
         if not password:
             if verbose:
-                print('[v] No password provided.')
-            password = input('Enter the password to decrypt the file: ')
+                print('{blue}[v] {yellow}No password provided.{reset}'.format(blue=blue, yellow=yellow, reset=reset))
+            password = input('{bold}Enter the password to decrypt the file: {reset}'.format(bold=bold, reset=reset))
         elif verbose:
-            print('[v] Password provided.')
+            print('{blue}[v] {green}Password provided.{reset}'.format(blue=blue, green=green, reset=reset))
 
         def generate_pad(seed, size: int) -> numpy.ndarray:
             """
@@ -218,7 +239,9 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
             return bytearray(numpy.array(bytearray(data), dtype=numpy.uint8) ^ pad)
 
         if verbose:
-            print('[v] Creating file... ({path})'.format(path=decrypted_file_path))
+            print('{blue}[v] {grey}Creating file... ({green}{path}{grey}){reset}'.format(blue=blue, grey=grey,
+                                                                                         green=green, reset=reset,
+                                                                                         path=decrypted_file_path))
         file_size = os.path.getsize(file_path) - len(decryption_key) - 1
         max_size = 1024 * 1024 * 1024
         # This is the maximum size (in bytes) per chunk. This can be higher based on your RAM.
@@ -228,7 +251,11 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
                 rng = numpy.random.default_rng(seed=int.from_bytes(bytes((password + decryption_key).encode()), 'big'))
                 # This sets the random outcome to reverse the encryption.
                 if verbose:
-                    print('[v] Decrypting file... ({size} bytes)'.format(size=file_size))
+                    print('{blue}[v] {grey}Decrypting file... ({cyan}{size} bytes{grey}){reset}'.format(blue=blue,
+                                                                                                        grey=grey,
+                                                                                                        cyan=cyan,
+                                                                                                        reset=reset,
+                                                                                                        size=file_size))
                     start = time.perf_counter()  # This starts a timer to time the decryption.
                 for _ in range(int(file_size / max_size)):
                     decrypted_file.write(apply_pad(encrypted_file.read(max_size), generate_pad(rng, max_size)))
@@ -238,24 +265,24 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
                 if verbose:
                     seconds = end - start
                     speed = round(file_size / seconds)
-                    print('[v] Decrypted in {seconds} seconds. ({speed:,} bytes per second)'.format(
-                        seconds=round(seconds, 2),
-                        speed=speed))
+                    message = '{blue}[v] {grey}Decrypted in {seconds} seconds. ({cyan}{speed:,} bytes per second{grey})'
+                    print((message + reset).format(blue=blue, grey=grey, cyan=cyan, seconds=round(seconds, 2),
+                                                   speed=speed))
             except Exception as exception:
                 decrypted_file.close()
                 os.remove(decrypted_file_path)  # This removes the partially decrypted file.
                 encrypted_file.close()
                 raise exception
         if verbose:
-            print('[v] Closing files...')
+            print('{blue}[v] {grey}Closing files...{reset}'.format(blue=blue, grey=grey, reset=reset))
         decrypted_file.close()
     encrypted_file.close()
     if verbose:
-        print('[v] Cleaning up...')
+        print('{blue}[v] {grey}Cleaning up...{reset}'.format(blue=blue, grey=grey, reset=reset))
     os.remove(file_path)  # This removes the encrypted file.
-    print('Decrypted as: {name}'.format(name=decrypted_file_name))
+    print('Decrypted as: {green}{name}{reset}'.format(green=green, reset=reset, name=decrypted_file_name))
     if verbose:
-        print('[v] Done!')
+        print('{blue}[v] {green}Done!{reset}'.format(blue=blue, green=green, reset=reset))
     print()
 
 
@@ -270,30 +297,32 @@ def destroy(file_path: typing.Union[str, None] = None, verbose: bool = False) ->
     """
     if not file_path:
         if verbose:
-            print('[v] No file provided.')
-        file_path = input('Enter the path of the file to destroy the key for: ')
+            print('{blue}[v] {yellow}No file provided.{reset}'.format(blue=blue, yellow=yellow, reset=reset))
+        file_path = input(
+            '{bold}Enter the path of the file to destroy the key for: {reset}'.format(bold=bold, reset=reset))
     elif verbose:
-        print('[v] File provided.')
+        print('{blue}[v] {green}File provided.{reset}'.format(blue=blue, green=green, reset=reset))
     while True:
         if verbose:
-            print('[v] Checking file...')
+            print('{blue}[v] {grey}Checking file...{reset}'.format(blue=blue, grey=grey, reset=reset))
         if os.path.isfile(file_path) and os.path.exists(file_path) and file_path.endswith('.MOTP'):
             if verbose:
-                print('[v] File is valid.')
+                print('{blue}[v] {green}File is valid.{reset}'.format(blue=blue, green=green, reset=reset))
             break
         else:
-            print('File is invalid.')
-            file_path = input('Enter the path of the file to destroy the key for: ')
+            print('{red}File is invalid.{reset}'.format(red=red, reset=reset))
+            file_path = input(
+                '{bold}Enter the path of the file to destroy the key for: {reset}'.format(bold=bold, reset=reset))
     if verbose:
-        print('[v] Opening file...')
+        print('{blue}[v] {grey}Opening file...{reset}'.format(blue=blue, grey=grey, reset=reset))
     with open(file_path, 'rb') as encrypted_file:
         if verbose:
-            print('[v] Finding decryption key...')
+            print('{blue}[v] {grey}Finding decryption key...{reset}'.format(blue=blue, grey=grey, reset=reset))
         decryption_key = encrypted_file.readlines(1)[0].decode().rstrip()
         try:
             float(decryption_key)
         except ValueError:
-            print('[!] Decryption key is invalid or destroyed.')
+            print('{red}[!] Decryption key is invalid or already destroyed.{reset}'.format(red=red, reset=reset))
             return
         decryption_key_length = len(decryption_key)
         data = b'\n' + encrypted_file.read()
@@ -302,19 +331,24 @@ def destroy(file_path: typing.Union[str, None] = None, verbose: bool = False) ->
     with open(file_path, 'wb') as encrypted_file:
         try:
             if verbose:
-                print('[v] Writing to file... ({size} bytes)'.format(size=file_size))
+                print(
+                    '{blue}[v] {grey}Writing to file... ({cyan}{size} bytes{grey}){reset}'.format(blue=blue, grey=grey,
+                                                                                                  cyan=cyan,
+                                                                                                  reset=reset,
+                                                                                                  size=file_size))
                 start = time.perf_counter()  # This starts a timer to time the writing.
             encrypted_file.write(data)
             end = time.perf_counter()
             if verbose:
                 seconds = end - start
                 speed = round(file_size / seconds)
-                print('[v] Wrote in {seconds} seconds. ({speed:,} bytes per second)'.format(seconds=round(seconds, 2),
-                                                                                            speed=speed))
+                message = '{blue}[v] {grey}Wrote in {seconds} seconds. ({cyan}{speed:,} bytes per second{grey}){reset}'
+                print(message.format(blue=blue, grey=grey, cyan=cyan, reset=reset, seconds=round(seconds, 2),
+                                     speed=speed))
         except Exception as exception:
             encrypted_file.close()
             raise exception
     encrypted_file.close()
     if verbose:
-        print('[v] Done!')
+        print('{blue}[v] {green}Done!{reset}'.format(blue=blue, green=green, reset=reset))
     print()
