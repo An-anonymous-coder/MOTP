@@ -65,7 +65,7 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
         print('[v] Password provided.')
     if verbose:
         print('[v] Generating decryption key...')
-    decryption_key = str(numpy.random.random())  # This generates a random decryption key.
+    decryption_key = str(numpy.random.default_rng().random())  # This generates a random decryption key.
     if verbose:
         print('[v] Decryption key: {key}'.format(key=decryption_key))
     if verbose:
@@ -78,14 +78,16 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
         if os.path.exists(encrypted_file_path):
             print('[!] File {path} already exists.\n'.format(path=encrypted_file_path))
 
-        def generate_pad(size: int) -> numpy.ndarray:
+        def generate_pad(seed, size: int) -> numpy.ndarray:
             """
             This generates a pseudorandom pad for the encryption.
+            :param seed: This is the default_rng seed to set the random outcome
+            :type seed: <class 'numpy.random._generator.Generator'>
             :param int size: This is the size of the pad.
             :return: Returns a numpy.ndarray of the pad.
             :rtype: numpy.ndarray
             """
-            return numpy.random.randint(0, 256, size, dtype=numpy.uint8)
+            return seed.integers(0, 255, size, dtype=numpy.uint8)
 
         def apply_pad(data: bytes, pad: numpy.ndarray) -> bytearray:
             """
@@ -106,16 +108,18 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
         with open(encrypted_file_path, 'wb') as encrypted_file:
             try:
                 encrypted_file.write((decryption_key + '\n').encode())
-                # The semicolon is used to separate the decryption key from the rest of the file.
-                numpy.random.seed(bytearray((password + decryption_key).encode()))
+                # The newline is used to separate the decryption key from the rest of the file.
+                rng = numpy.random.default_rng(seed=numpy.array(bytearray((password + decryption_key).encode())))
                 # This randomizes the outcome of the encryption in a reversible way.
+                # Why there is an error: This will work fine since numpy.array() is an array_like[ints], though it is
+                # not "formally" listed as a working type
                 if verbose:
                     print('[v] Encrypting file... ({size} bytes)'.format(size=file_size))
                     start = time.perf_counter()  # This starts a timer to time the encryption.
                 for _ in range(int(file_size / max_size)):
-                    encrypted_file.write(apply_pad(decrypted_file.read(max_size), generate_pad(max_size)))
+                    encrypted_file.write(apply_pad(decrypted_file.read(max_size), generate_pad(rng, max_size)))
                 excess_size = file_size % max_size
-                encrypted_file.write(apply_pad(decrypted_file.read(excess_size), generate_pad(excess_size)))
+                encrypted_file.write(apply_pad(decrypted_file.read(excess_size), generate_pad(rng, excess_size)))
                 end = time.perf_counter()
                 if verbose:
                     seconds = end - start
@@ -194,14 +198,16 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
         elif verbose:
             print('[v] Password provided.')
 
-        def generate_pad(size: int) -> numpy.ndarray:
+        def generate_pad(seed, size: int) -> numpy.ndarray:
             """
             This generates a pseudorandom pad for the decryption.
+            :param seed: This is the default_rng seed to set the random outcome
+            :type seed: <class 'numpy.random._generator.Generator'>
             :param int size: This is the size of the pad.
             :return: Returns a numpy.ndarray of the pad.
             :rtype: numpy.ndarray
             """
-            return numpy.random.randint(0, 256, size, dtype=numpy.uint8)
+            return seed.integers(0, 255, size, dtype=numpy.uint8)
 
         def apply_pad(data: bytes, pad: numpy.ndarray) -> bytearray:
             """
@@ -221,15 +227,17 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
         # THE FILE MUST BE DECRYPTED WITH THE SAME CHUNK SIZE YOU ENCRYPTED IT WITH.
         with open(decrypted_file_path, 'wb') as decrypted_file:
             try:
-                numpy.random.seed(bytearray((password + decryption_key).encode()))
+                rng = numpy.random.default_rng(seed=numpy.array(bytearray((password + decryption_key).encode())))
                 # This sets the random outcome to reverse the encryption.
+                # Why there is an error: This will work fine since numpy.array() is an array_like[ints], though it is
+                # not "formally" listed as a working type
                 if verbose:
                     print('[v] Decrypting file... ({size} bytes)'.format(size=file_size))
                     start = time.perf_counter()  # This starts a timer to time the decryption.
                 for _ in range(int(file_size / max_size)):
-                    decrypted_file.write(apply_pad(encrypted_file.read(max_size), generate_pad(max_size)))
+                    decrypted_file.write(apply_pad(encrypted_file.read(max_size), generate_pad(rng, max_size)))
                 excess_size = file_size % max_size
-                decrypted_file.write(apply_pad(encrypted_file.read(excess_size), generate_pad(excess_size)))
+                decrypted_file.write(apply_pad(encrypted_file.read(excess_size), generate_pad(rng, excess_size)))
                 end = time.perf_counter()
                 if verbose:
                     seconds = end - start
