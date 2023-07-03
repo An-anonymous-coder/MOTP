@@ -15,10 +15,18 @@ decrypt(file_path, password, verbose): Decrypts any file. Returns nothing.
 destroy(file_path, verbose): Destroys the decryption key for a file. Returns nothing.
 """
 import os
+import sys
 import time
 import typing
 
 import numpy  # https://numpy.org/install/
+
+if sys.version_info.major < 3 or sys.version_info.minor < 3:
+    import tkSimpleDialog as dialog  # For Python 3.2.x and below (Untested)
+elif sys.version_info.minor < 6:
+    from tkinter import simpledialog as dialog  # For Python 3.3.x through 3.5.x (Untested)
+else:
+    import tkinter.simpledialog as dialog  # For Python 3.6.x and above (Tested Python 3.10.6)
 
 red = '\u001b[38;2;255;0;0m'
 yellow = '\u001b[38;2;255;255;0m'
@@ -64,8 +72,14 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
         if verbose:
             print('{blue}[v] {yellow}Password not provided.{reset}'.format(blue=blue, yellow=yellow, reset=reset))
         while True:
-            password = input('{bold}Enter the password to encrypt the file: {reset}'.format(bold=bold, reset=reset))
-            if input('{bold}Enter the password again to verify it: {reset}'.format(bold=bold, reset=reset)) == password:
+            try:
+                password = dialog.askstring("Password", 'Enter the password to encrypt the file:', show='*')
+                confirmation = dialog.askstring("Password", 'Enter the password again to verify it:', show='*')
+            except ModuleNotFoundError:  # Please contact me if this happens
+                password = input('{bold}Enter the password to encrypt the file: {reset}'.format(bold=bold, reset=reset))
+                confirmation = input(
+                    '{bold}Enter the password again to verify it: {reset}'.format(bold=bold, reset=reset))
+            if confirmation == password:
                 if verbose:
                     print('{blue}[v] {green}Password verified.{reset}'.format(blue=blue, green=green, reset=reset))
                 break
@@ -213,7 +227,10 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
         if not password:
             if verbose:
                 print('{blue}[v] {yellow}No password provided.{reset}'.format(blue=blue, yellow=yellow, reset=reset))
-            password = input('{bold}Enter the password to decrypt the file: {reset}'.format(bold=bold, reset=reset))
+            try:
+                password = dialog.askstring("Password", 'Enter the password to decrypt the file:', show='*')
+            except ModuleNotFoundError:  # Please contact me if this happens
+                password = input('{bold}Enter the password to decrypt the file: {reset}'.format(bold=bold, reset=reset))
         elif verbose:
             print('{blue}[v] {green}Password provided.{reset}'.format(blue=blue, green=green, reset=reset))
 
