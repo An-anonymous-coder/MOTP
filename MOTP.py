@@ -21,13 +21,16 @@ import typing
 
 import numpy  # https://numpy.org/install/
 
-if sys.version_info.major < 3 or sys.version_info.minor < 3:
-    import tkSimpleDialog as dialog  # For Python 3.2.x and below (Untested)
-elif sys.version_info.minor < 6:
-    from tkinter import simpledialog as dialog  # For Python 3.3.x through 3.5.x (Untested)
-else:
-    import tkinter.simpledialog as dialog  # For Python 3.6.x and above (Tested Python 3.10.6)
+# I hate `tkinter`'s inconsistency.
+if sys.version_info.major < 3 or sys.version_info.minor < 3:  # For Python 3.2.x and below (Untested)
+    import tkSimpleDialog as dialog
+elif sys.version_info.minor < 6:  # For Python 3.3.x through 3.5.x (Untested)
+    from tkinter import simpledialog as dialog
+else:  # For Python 3.6.x and above (Tested Python 3.10.6)
+    import tkinter
+    import tkinter.simpledialog as dialog
 
+    tkinter.Tk().withdraw()  # Someone said this was necessary (It worked without in Python 3.10.6)
 red = '\u001b[38;2;255;0;0m'
 yellow = '\u001b[38;2;255;255;0m'
 green = '\u001b[38;2;0;255;0m'
