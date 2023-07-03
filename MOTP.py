@@ -77,7 +77,13 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
         while True:
             try:
                 password = dialog.askstring("Password", 'Enter the password to encrypt the file:', show='*')
+                if not password:
+                    print('{red}Operation canceled.{reset}'.format(red=red, reset=reset))
+                    exit()
                 confirmation = dialog.askstring("Password", 'Enter the password again to verify it:', show='*')
+                if not confirmation:
+                    print('{red}Operation canceled.{reset}'.format(red=red, reset=reset))
+                    exit()
             except ModuleNotFoundError:  # Please contact me if this happens
                 password = input('{bold}Enter the password to encrypt the file: {reset}'.format(bold=bold, reset=reset))
                 confirmation = input(
@@ -232,6 +238,9 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
                 print('{blue}[v] {yellow}No password provided.{reset}'.format(blue=blue, yellow=yellow, reset=reset))
             try:
                 password = dialog.askstring("Password", 'Enter the password to decrypt the file:', show='*')
+                if not password:
+                    print('{red}Operation canceled.{reset}'.format(red=red, reset=reset))
+                    exit()
             except ModuleNotFoundError:  # Please contact me if this happens
                 password = input('{bold}Enter the password to decrypt the file: {reset}'.format(bold=bold, reset=reset))
         elif verbose:
