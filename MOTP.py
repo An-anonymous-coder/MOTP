@@ -126,15 +126,15 @@ def encrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
             """
             return seed.integers(0, 255, size, dtype=numpy.uint8)
 
-        def apply_pad(data: bytes, pad: numpy.ndarray) -> bytearray:
+        def apply_pad(data: bytes, pad: numpy.ndarray) -> numpy.ndarray:
             """
             This is the function that encrypts the data.
             :param bytes data: This is the data to encrypt.
             :param numpy.ndarray pad: This is the pad to encrypt the data with.
             :return: Returns the encrypted data.
-            :rtype: bytearray
+            :rtype: numpy.ndarray
             """
-            return bytearray(numpy.array(bytearray(data), dtype=numpy.uint8) ^ pad)
+            return bytearray(data) ^ pad
 
         if verbose:
             print('{blue}[v] {grey}Creating file... ({green}{path}{grey}){reset}'.format(blue=blue, grey=grey,
@@ -257,15 +257,15 @@ def decrypt(file_path: typing.Union[str, None] = None, password: typing.Union[st
             """
             return seed.integers(0, 255, size, dtype=numpy.uint8)
 
-        def apply_pad(data: bytes, pad: numpy.ndarray) -> bytearray:
+        def apply_pad(data: bytes, pad: numpy.ndarray) -> numpy.ndarray:
             """
             This is the function that decrypts the data.
             :param bytes data: This is the data to decrypt.
             :param numpy.ndarray pad: This is the pad to decrypt the data with.
             :return: Returns the decrypted data.
-            :rtype: bytearray
+            :rtype: numpy.ndarray
             """
-            return bytearray(numpy.array(bytearray(data), dtype=numpy.uint8) ^ pad)
+            return bytearray(data) ^ pad
 
         if verbose:
             print('{blue}[v] {grey}Creating file... ({green}{path}{grey}){reset}'.format(blue=blue, grey=grey,
